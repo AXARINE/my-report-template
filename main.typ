@@ -27,7 +27,12 @@
   fontset-cjk: paper-fontset,
   font-latin: (serif: "Times New Roman", mono: "Maple Mono NF"),
   fix-first-line-indent: false,
-  heading-numbering: ((format: "一、", sep: 0em),),
+  // 各级标题编号：一、 /（一）/ 1.，与通用中文论文格式一致
+  heading-numbering: (
+    (format: "一、", sep: 0em),
+    (format: (..nums) => numbering("（一）", nums.pos().last()), sep: 0em),
+    (format: (..nums) => numbering("1.", nums.pos().last()), sep: 0.5em),
+  ),
 )
 
 #let checkbox = text(font: "Segoe UI Symbol")[□]
@@ -125,7 +130,21 @@
     first-line-indent: (amount: 2em, all: true),
     justify: true,
   )
-  show table: set block(below: 0pt)
+
+  // 标题：按通用论文格式“段前 0.5 行、段后 0 行”换算为标题字号的 em。
+  // Typst 行框比字形小，直接取 0 会与正文重叠，故取 above: 1em、below: 0.65em，
+  // 呈现“上留白、下紧凑”的标准效果。
+  show heading: set block(above: 1em, below: 0.65em)
+
+  // 无序列表、有序列表：行距与正文一致（1.5 倍），项目之间不额外留白，
+  // 整体缩进 2 字符，与正文首行缩进对齐
+  set list(spacing: line-leading, indent: 2em, body-indent: 0.5em)
+  set enum(spacing: line-leading, indent: 2em, body-indent: 0.5em)
+
+  // 注意：不能用 show table: set block(...)，因为 show 规则里的 set 会作用到
+  // 表格内部的所有块（导致表格中的列表、标题间距被清零甚至重叠）；
+  // 这里用包装块的方式只去掉表格自身的下方间距。
+  show table: it => block(below: 0pt, it)
 
   report-title(course)
   student-info(
@@ -137,7 +156,6 @@
     grade,
   )
 
-  set list(spacing: 0.5em)
   table(
     columns: 1fr,
     stroke: 0.5pt,
