@@ -1,8 +1,31 @@
 #import "@preview/ctyp:0.3.2": ctyp
 
+// 论文常用字体集：宋体正文、黑体标题/加粗、楷体强调、Maple Mono NF 代码
+// 说明：raw（行内代码与代码块）统一使用 Maple Mono NF，
+//       "Maple Mono NF" 字族在 Windows 上包含 MapleMono-NF-CN（含中文字形）。
+#let paper-fontset = (
+  family: (
+    song: (name: "SimSun"),
+    hei: (name: "SimHei"),
+    kai: (name: "KaiTi"),
+    fang: (name: "FangSong"),
+    lishu: (name: "LiSu"),
+    youyuan: (name: "YouYuan"),
+    maple: (name: "Maple Mono NF"),
+  ),
+  map: (
+    text: (cjk: "song", latin: "serif"),
+    strong: (cjk: "hei", latin: "serif"),
+    emph: (cjk: "kai", latin: "serif"),
+    raw: (cjk: "maple", latin: "mono"),
+    heading: (cjk: "hei", latin: "serif"),
+    title: (cjk: "hei", latin: "serif"),
+  ),
+)
+
 #let (ctypset, (song, hei, kai, fang)) = ctyp(
-  fontset-cjk: "windows",
-  font-latin: (serif: "Times New Roman"),
+  fontset-cjk: paper-fontset,
+  font-latin: (serif: "Times New Roman", mono: "Maple Mono NF"),
   fix-first-line-indent: false,
   heading-numbering: ((format: "一、", sep: 0em),),
 )
@@ -49,6 +72,9 @@
 }
 
 #let teacher-evaluation() = [
+  // 表格式评语区不是正文段落，不适用首行缩进
+  #set par(first-line-indent: 0em)
+
   #text(size: 12pt)[#hei[教师评价：]]
 
   #block(above: 1em, below: 1em)[
@@ -85,7 +111,20 @@
 ) = {
   show: ctypset
   set text(size: 10.5pt)
-  set par(leading: 1em, spacing: 1.5em)
+
+  // 中国通用论文段落标准（以 em 计）：
+  // - 行距 1.5 倍：宋体单倍行距约为 1.3 倍字号，1.5 倍即约 1.95em；
+  //   Typst 的行框高度约 0.68em，故 leading = 1.95em - 0.68em ≈ 1.25em。
+  // - 段前段后 0：Typst 中段落间距取与 leading 相同的值，才能与行距一致、
+  //   保持统一行网格（若取 0em，段落会挤在一起，明显小于行距）。
+  // - 首行缩进 2 字符 = 2em，两端对齐。
+  let line-leading = 1.25em
+  set par(
+    leading: line-leading,
+    spacing: line-leading,
+    first-line-indent: (amount: 2em, all: true),
+    justify: true,
+  )
   show table: set block(below: 0pt)
 
   report-title(course)
@@ -98,7 +137,6 @@
     grade,
   )
 
-  set par(spacing: 0.9em)
   set list(spacing: 0.5em)
   table(
     columns: 1fr,
