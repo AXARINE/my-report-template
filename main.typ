@@ -58,14 +58,16 @@
   location,
   grade,
 ) = {
-  table(
+  // 只有最外层表格需要贴边：给表格套一层 below: 0pt 的块，
+  // 让后续表格紧贴上来；不写全局 show table 规则，避免影响嵌套表格
+  block(below: 0pt, table(
     columns: (1.75fr, 3fr, 1fr, 2fr),
     stroke: 0.5pt,
     align: center,
     inset: 0.75em,
     [*年级、专业、班级*], student-class, [*姓名*], student-name,
-  )
-  table(
+  ))
+  block(below: 0pt, table(
     columns: (1fr, 2fr, 1fr, 2.6fr),
     stroke: 0.5pt,
     align: center,
@@ -73,7 +75,7 @@
     [*实验题目*], table.cell(colspan: 3, title),
     [*实验时间*], date, [*实验地点*], location,
     [*实验成绩*], grade, [*实验性质*], experiment-types,
-  )
+  ))
 }
 
 #let teacher-evaluation() = [
@@ -141,11 +143,9 @@
   set list(spacing: line-leading, indent: 2em, body-indent: 0.5em)
   set enum(spacing: line-leading, indent: 2em, body-indent: 0.5em)
 
-  // 注意：不能用 show table: set block(...)，因为 show 规则里的 set 会作用到
-  // 表格内部的所有块（导致表格中的列表、标题间距被清零甚至重叠）；
-  // 这里用包装块的方式只去掉表格自身的下方间距。
-  show table: it => block(below: 0pt, it)
-
+  // 表格贴边只作用于最外层表格（student-info 的两张表、下方内容表）：
+  // 在表格外面套一个 below: 0pt 的块即可，不再使用全局 show table 规则，
+  // 因此表格内部的嵌套表格（如教师评价的复选框表、正文中的数据表）保持默认间距。
   report-title(course)
   student-info(
     student-class,
@@ -156,13 +156,13 @@
     grade,
   )
 
-  table(
+  block(below: 0pt, table(
     columns: 1fr,
     stroke: 0.5pt,
     inset: (x: 0.75em, y: 1em),
     teacher-evaluation(),
     ..sections.map(((section-title, body)) => report-section(section-title, body)),
-  )
+  ))
 }
 
 #experiment-report(
