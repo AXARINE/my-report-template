@@ -34,6 +34,12 @@
     (format: (..nums) => numbering("1.", nums.pos().last()), sep: 0.5em),
   ),
 )
+#set text(costs: (orphan: 0%, widow: 0%))
+#show heading: set block(sticky: false)
+#show figure.where(kind: table): set block(breakable: true)
+
+#show figure.where(kind: table): set figure.caption(position: top)
+#show figure.caption: it => block(sticky: true, it)
 
 #let checkbox = text(font: "Segoe UI Symbol")[□]
 #let checkbox-filled = text(font: "Segoe UI Symbol")[■]
@@ -101,6 +107,23 @@
 ]
 
 #let report-section(title, body) = [
+  //处理三线表
+  #show table: it => {
+    // 已经手写 hline 的表格不再处理，同时避免递归
+    if it.children.any(c => c.func() == table.hline) { return it }
+
+    let args = it.fields()
+    let children = args.remove("children")
+    let _ = args.remove("stroke", default: none)
+
+    table(
+      ..args,
+      stroke: (x, y) => if y == 0 { (bottom: 0.75pt) }, // 表头下细线
+      table.hline(y: 0, stroke: 1.5pt), // 顶线
+      ..children,
+      table.hline(stroke: 1.5pt), // 底线（置于所有单元格之后，即表尾）
+    )
+  }
   = #title
 
   #body
