@@ -1,31 +1,13 @@
 #import "@preview/ctyp:0.3.2": ctyp
-
-// 论文常用字体集：宋体正文、黑体标题/加粗、楷体强调、Maple Mono NF 代码
-// 说明：raw（行内代码与代码块）统一使用 Maple Mono NF，
-//       "Maple Mono NF" 字族在 Windows 上包含 MapleMono-NF-CN（含中文字形）。
-#let paper-fontset = (
-  family: (
-    song: (name: "SimSun"),
-    hei: (name: "SimHei"),
-    kai: (name: "KaiTi"),
-    fang: (name: "FangSong"),
-    lishu: (name: "LiSu"),
-    youyuan: (name: "YouYuan"),
-    maple: (name: "Maple Mono NF"),
-  ),
-  map: (
-    text: (cjk: "song", latin: "serif"),
-    strong: (cjk: "hei", latin: "serif"),
-    emph: (cjk: "kai", latin: "serif"),
-    raw: (cjk: "maple", latin: "mono"),
-    heading: (cjk: "hei", latin: "serif"),
-    title: (cjk: "hei", latin: "serif"),
-  ),
-)
+#import "@preview/cuti:0.4.0": show-cn-fakebold
 
 #let (ctypset, (song, hei, kai, fang)) = ctyp(
-  fontset-cjk: paper-fontset,
+  fontset-cjk: "windows",
   font-latin: (serif: "Times New Roman", mono: "Maple Mono NF"),
+  // 加粗正文保持宋体，不再切换为黑体
+  font-cjk-map: (
+    strong: (cjk: "song", latin: "serif"),
+  ),
   fix-first-line-indent: false,
   // 各级标题编号：一、 /（一）/ 1.，与通用中文论文格式一致
   heading-numbering: (
@@ -140,6 +122,7 @@
   sections: (),
 ) = {
   show: ctypset
+  show: show-cn-fakebold
   set text(size: 10.5pt)
 
   // 中国通用论文段落标准（以 em 计）：
