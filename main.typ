@@ -89,13 +89,28 @@
 ]
 
 #let report-section(title, body) = [
-  //处理三线表
+  // 处理三线表：表头默认水平且垂直居中，其他行默认水平居中
   #show table: it => {
     // 已经手写 hline 的表格不再处理，同时避免递归
     if it.children.any(c => c.func() == table.hline) { return it }
 
     let args = it.fields()
-    let children = args.remove("children")
+    let children = args.remove("children").map(c => {
+      if c.func() != table.header { return c }
+      let f = c.fields()
+      let hc = f.remove("children")
+      table.header(..f, ..hc.map(x => {
+        if x.func() == table.cell {
+          let xf = x.fields()
+          let body = xf.remove("body")
+          if "align" not in xf { xf.insert("align", center + horizon) }
+          table.cell(body, ..xf)
+        } else {
+          table.cell(align: center + horizon, x)
+        }
+      }))
+    })
+    args.insert("align", center)
     let _ = args.remove("stroke", default: none)
 
     table(
